@@ -106,22 +106,22 @@ const Login = () => {
           </Button>
         </form>
 
-        <div className="relative my-6">
+        {/* <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-gray-300"></span>
           </div>
           <div className="relative flex justify-center text-sm text-gray-500">
             <span className="bg-white px-2">Or continue with</span>
           </div>
-        </div>
+        </div> */}
 
-        <Button
+        {/* <Button
           variant="outline"
           className="w-full flex items-center justify-center gap-2"
         >
           <FaGoogle size={20} />
           Login with Google
-        </Button>
+        </Button> */}
 
         <p className="mt-4 text-center text-sm text-gray-600">
           Don't have an account?{" "}
