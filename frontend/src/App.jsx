@@ -19,10 +19,10 @@ import SearchResults from './pages/SearchResults';
 import ProfilePage from './pages/ProfilePage';
 import Orders from './pages/Orders';
 import VerifyOtp from './features/auth/verify-otp';
+import NotFoundPage from './pages/NotFoundPage';
 
 const queryClient = new QueryClient();
 
-// ✅ Main Router
 const router = createBrowserRouter([
   {
     path: "/login",
@@ -94,6 +94,11 @@ const router = createBrowserRouter([
             element: <Dashboard />,
           },
         ],
+      },
+
+      {
+        path: "*",
+        element: <NotFoundPage />,
       },
     ],
   },

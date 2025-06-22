@@ -111,14 +111,22 @@ const Header = () => {
             >
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center justify-between">
-                        <div className="flex-shrink-0">
-                            <Link to="/" className="block relative">
-                                <h1 className="text-2xl font-bold text-gray-900 ">
-                                    OneClothes
-                                    {isAdmin && <span className='absolute text-sm font-light -bottom-3  right-0'>Admin</span>}
-                                </h1>
+                        <div className="flex items-center space-x-2 flex-shrink-0">
+                            <Link to="/" className="flex items-center space-x-2 relative">
+                                <img
+                                    src="/logo.png"
+                                    alt="OneClothes Logo"
+                                    className="w-12 h-12  object-contain"
+                                />
+                                {isAdmin && (
+                                    <span className="absolute -bottom-0 left-6 ml-2 text-sm font-light text-gray-600">
+                                        Admin
+                                    </span>
+                                )}
                             </Link>
                         </div>
+
+
 
                         <nav className="hidden md:flex items-center gap-8 ml-8">
                             <Link
