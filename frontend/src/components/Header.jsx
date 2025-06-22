@@ -128,7 +128,7 @@ const Header = () => {
                                 Shop
                                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-700 transition-all duration-200 group-hover:w-full"></span>
                             </Link>
-                           
+
                             <Link
                                 to="/about-us"
                                 className="text-gray-700 hover:text-gray-600 font-medium transition-all duration-200 relative group"
@@ -308,20 +308,14 @@ const Header = () => {
                         </div>
                     </div>
                 </div>
-
             </header>
-
-            {isLoading ? (
-                <div className="p-4 text-center text-gray-500">Loading cart...</div>
-            ) : (
-                <CartSlide
-                    isOpen={isCartOpen}
-                    onClose={() => setIsCartOpen(false)}
-                    cartItems={localCart}
-                    updateQuantity={updateQuantity}
-                    removeItem={removeItem}
-                />
-            )}
+            <CartSlide
+                isOpen={isCartOpen}
+                onClose={() => setIsCartOpen(false)}
+                cartItems={localCart}
+                updateQuantity={updateQuantity}
+                removeItem={removeItem}
+            />
         </>
     );
 };

@@ -18,8 +18,7 @@ const SingleProduct = () => {
     const [selectSize, setSelectSize] = useState(null)
     const [quantity, setQuantity] = useState(1);
     const { data, isLoading, error } = useProductGetById(ProdId);
-    const { user, token } = useSelector((state) => state.auth);
-
+    const token = localStorage.getItem('token');
     const dispatch = useDispatch();
 
     const wishlistItems = useSelector(state => state.wishlist.items);
@@ -27,7 +26,7 @@ const SingleProduct = () => {
 
     const product = data?.data.data;
 
-    
+
 
     const createOrderMutation = useCreateOrder({
         onSuccess: (data) => {

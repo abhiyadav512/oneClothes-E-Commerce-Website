@@ -9,6 +9,7 @@ const UserCardAdmin = ({ user, onEdit, onDelete, isSuperAdmin }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [selectedRole, setSelectedRole] = useState(user.role);
 
+    // console.log(user);
     const handleSave = () => {
         if (selectedRole !== user.role) {
             onEdit({ ...user, role: selectedRole });

@@ -144,6 +144,7 @@ const Register = () => {
                 type="date"
                 required
                 className="pl-9"
+                min="1900-01-01"
                 value={form.dob}
                 onChange={handleChange}
               />
