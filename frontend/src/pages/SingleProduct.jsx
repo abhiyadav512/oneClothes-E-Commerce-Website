@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleWishlistItem } from "@/store/slices/wishlistSlice";
 import axios from "axios";
+import axiosInstance from "@/lib/axiosInstance";
 // import { useCreateOrder } from "@/hooks/useOrder";
 
 const SingleProduct = () => {
@@ -23,6 +24,7 @@ const SingleProduct = () => {
     const dispatch = useDispatch();
 
     const wishlistItems = useSelector(state => state.wishlist.items);
+    const user = useSelector((state) => state.auth.user);
     const isWishlisted = wishlistItems.includes(ProdId);
 
     const product = data?.data.data;
@@ -52,22 +54,16 @@ const SingleProduct = () => {
 
         try {
             // Step 1: Create Order (Your existing API)
-            const { data } = await axios.post(
-                "http://localhost:3000/api/orders/create-order", // Or use axiosInstance if you configured one
+            const { data } = await axiosInstance.post(
+                "/api/orders/create-order", // Or use axiosInstance if you configured one
                 {
                     productId: ProdId,
                     quantity,
                     selectedSize: selectSize,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+                });
 
             const { order, rezorpayOrder } = data;
-            console.log(data);
+            // console.log(data);
             // Step 2: Open Razorpay popup
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Replace with your test Razorpay key
@@ -77,23 +73,17 @@ const SingleProduct = () => {
                 description: "Product Purchase",
                 order_id: rezorpayOrder.id,
                 handler: async function (response) {
-                    console.log(response);
+                    // console.log(response);
                     // Step 3: Verify Payment
                     try {
-                        const verifyRes = await axios.post(
-                            "http://localhost:3000/api/orders/verify-payment",
+                        const verifyRes = await axiosInstance.post(
+                            "/api/orders/verify-payment",
                             {
                                 orderId: order.id,
                                 razorpay_payment_id: response.razorpay_payment_id,
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_signature: response.razorpay_signature,
-                            },
-                            {
-                                headers: {
-                                    Authorization: `Bearer ${token}`,
-                                },
-                            }
-                        );
+                            });
 
                         if (verifyRes.data.success) {
                             toast.success("🎉 Payment successful!");
@@ -106,8 +96,8 @@ const SingleProduct = () => {
                     }
                 },
                 prefill: {
-                    name: "abhi",
-                    email: "abhi@gmail.com.com",
+                    name: user?.name || "",
+                    email: user?.email || "",
                 },
                 theme: {
                     color: "#000",
