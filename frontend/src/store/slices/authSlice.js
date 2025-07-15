@@ -1,11 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { encryptUser, decryptUser } from "@/lib/secureStorage";
 
-// const user = JSON.parse(localStorage.getItem("user"));
-
+const token = localStorage.getItem("token") || null;
+const encryptedUser = localStorage.getItem("user");
+const user = encryptedUser ? decryptUser(encryptedUser) : null;
 
 const initialState = {
-  token: localStorage.getItem("token") || null,
-  user : JSON.parse(localStorage.getItem('user'))|| null  ,
+  token,
+  user,
 };
 
 const authSlice = createSlice({
@@ -14,9 +16,12 @@ const authSlice = createSlice({
   reducers: {
     setUser(state, action) {
       state.user = action.payload;
-
-      localStorage.setItem("user", JSON.stringify(action.payload));
-      // console.log(action.payload);
+      const encrypted = encryptUser(action.payload);
+      localStorage.setItem("user", encrypted);
+    },
+    setToken(state, action) {
+      state.token = action.payload;
+      localStorage.setItem("token", action.payload);
     },
     logout(state) {
       state.token = null;
@@ -27,5 +32,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setUser, logout } = authSlice.actions;
+export const { setUser, setToken, logout } = authSlice.actions;
 export default authSlice.reducer;

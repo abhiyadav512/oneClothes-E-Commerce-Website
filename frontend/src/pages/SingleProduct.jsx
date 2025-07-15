@@ -10,7 +10,8 @@ import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleWishlistItem } from "@/store/slices/wishlistSlice";
-import { useCreateOrder } from "@/hooks/useOrder";
+import axios from "axios";
+// import { useCreateOrder } from "@/hooks/useOrder";
 
 const SingleProduct = () => {
     const queryClient = useQueryClient();
@@ -28,35 +29,99 @@ const SingleProduct = () => {
 
 
 
-    const createOrderMutation = useCreateOrder({
-        onSuccess: (data) => {
-            toast.success("Order placed successfully!");
-            // Optionally: navigate to order summary page
-        },
-        onError: (error) => {
-            toast.error(error?.response?.data?.message || "Failed to place order.");
-        }
-    });
+    // const createOrderMutation = useCreateOrder({
+    //     onSuccess: (data) => {
+    //         toast.success("Order placed successfully!");
+    //         // Optionally: navigate to order summary page
+    //     },
+    //     onError: (error) => {
+    //         toast.error(error?.response?.data?.message || "Failed to place order.");
+    //     }
+    // });
 
-    const handleBuyNow = () => {
+    const handleBuyNow = async () => {
         if (!token) {
             toast.error("Please login to place an order.");
             return;
         }
+
         if (!selectSize) {
             toast.error("Please select a size.");
             return;
         }
 
-        const confirmOrder = window.confirm("Do you want to place this order?");
-        if (confirmOrder) {
-            createOrderMutation.mutate({
-                productId: ProdId,
-                quantity,
-                selectedSize: selectSize,
-            });
+        try {
+            // Step 1: Create Order (Your existing API)
+            const { data } = await axios.post(
+                "http://localhost:3000/api/orders/create-order", // Or use axiosInstance if you configured one
+                {
+                    productId: ProdId,
+                    quantity,
+                    selectedSize: selectSize,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const { order, rezorpayOrder } = data;
+            console.log(data);
+            // Step 2: Open Razorpay popup
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Replace with your test Razorpay key
+                amount: rezorpayOrder.amount,
+                currency: "INR",
+                name: "OneClothes",
+                description: "Product Purchase",
+                order_id: rezorpayOrder.id,
+                handler: async function (response) {
+                    console.log(response);
+                    // Step 3: Verify Payment
+                    try {
+                        const verifyRes = await axios.post(
+                            "http://localhost:3000/api/orders/verify-payment",
+                            {
+                                orderId: order.id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature,
+                            },
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            }
+                        );
+
+                        if (verifyRes.data.success) {
+                            toast.success("🎉 Payment successful!");
+                        } else {
+                            toast.error("⚠️ Payment verification failed.");
+                        }
+                    } catch (err) {
+                        toast.error("Payment verification error");
+                        console.error(err);
+                    }
+                },
+                prefill: {
+                    name: "abhi",
+                    email: "abhi@gmail.com.com",
+                },
+                theme: {
+                    color: "#000",
+                }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+        } catch (error) {
+            toast.error(error?.response?.data?.message || "Failed to create order");
+            console.error(error);
         }
     };
+
 
     const useAddMutation = useAddCart({
         onSuccess: (data) => {

@@ -143,11 +143,12 @@ const ProfilePage = () => {
 
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
                                 <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-600 mb-1">Wishlist</p>
-                                        <p className="text-2xl font-bold text-gray-900">{<p className="text-2xl font-bold text-gray-900">{wishlistItemsCount}</p>
-                                        }</p>
-                                    </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-600 mb-1">Wishlist</p>
+                                            <p className="text-2xl font-bold text-gray-900">
+                                                <span>{wishlistItemsCount}</span>
+                                            </p>
+                                        </div>
                                     <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center">
                                         <Heart size={20} className="text-pink-600" />
                                     </div>

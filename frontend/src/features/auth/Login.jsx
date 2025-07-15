@@ -8,7 +8,7 @@ import { Mail, Lock, EyeOff, Eye } from "lucide-react";
 import { useLogin } from "@/hooks/useAuth";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
-import { setUser } from "@/store/slices/authSlice";
+import { setToken, setUser } from "@/store/slices/authSlice";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const Login = () => {
   const loginMutation = useLogin({
     onSuccess: (data) => {
       const { token, user } = data.data;
-      localStorage.setItem("token", token);
+      dispatch(setToken(token));
       dispatch(setUser(user));
       toast.success("Login successful!");
       navigate("/");
@@ -51,7 +51,7 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center  px-6">
       <div className="max-w-md w-full  p-8">
-      <h3 className="text-center font-thin text-3xl mb-4">OneClothes</h3>
+        <h3 className="text-center font-thin text-3xl mb-4">OneClothes</h3>
         <h2 className="text-2xl font-light mb-6 text-center">Sign in to your account</h2>
 
         <form className="space-y-4" onSubmit={handleSubmit}>

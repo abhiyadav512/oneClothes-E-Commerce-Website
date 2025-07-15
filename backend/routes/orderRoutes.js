@@ -5,13 +5,15 @@ const {
   getAllOrder,
   updateOrderStatus,
   cancelOrder,
+  verifyPayment,
 } = require("../controllers/orderController");
 const { verifytoken } = require("../middleware/varifyToken");
 const { requireRole } = require("../middleware/requireRole");
 
 const routes = express.Router();
 
-routes.post("/", verifytoken, createOrder);
+routes.post("/create-order", verifytoken, createOrder);
+routes.post("/verify-payment", verifytoken, verifyPayment);
 routes.get("/my", verifytoken, getMyOrder);
 routes.get(
   "/all-orders",

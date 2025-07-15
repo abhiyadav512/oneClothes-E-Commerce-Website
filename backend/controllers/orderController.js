@@ -1,6 +1,14 @@
 const prisma = require("../database/prisma");
 const sendResponse = require("../utils/response");
 
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_SECRET,
+});
+
 const createOrder = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -53,12 +61,19 @@ const createOrder = async (req, res, next) => {
 
       await prisma.cartItem.deleteMany({ where: { userId } });
     }
+    // Razorpay Order
+    const rezorpayOrder = await razorpay.orders.create({
+      amount: Math.round(totalPrice * 100),
+      currency: "INR",
+      receipt: `order_rcptid_${Date.now()}`,
+    });
 
     const order = await prisma.order.create({
       data: {
         userId,
         totalPrice,
         status: "PENDING",
+        razorpayOrderId: rezorpayOrder.id,
         orderItems: {
           create: orderItems,
         },
@@ -66,12 +81,72 @@ const createOrder = async (req, res, next) => {
       include: { orderItems: true },
     });
 
-    sendResponse(res, 201, true, "Order placed", order);
+    res.status(201).json({
+      success: true,
+      message: "Order created, proceed to payment",
+      order,
+      rezorpayOrder: {
+        id: rezorpayOrder.id,
+        amount: rezorpayOrder.amount,
+        currency: rezorpayOrder.currency,
+      },
+    });
+  } catch (error) {
+    next(error);
+    console.log(error);
+  }
+};
+
+const verifyPayment = async (req, res, next) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      orderId,
+    } = req.body;
+    
+    if (
+      !razorpay_order_id ||
+      !razorpay_payment_id ||
+      !razorpay_signature ||
+      !orderId
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required payment details",
+      });
+    }
+
+    const generatedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_SECRET)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
+
+    if (generatedSignature !== razorpay_signature) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Payment verification failed" });
+    }
+
+    const updatedOrder = await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        razorpayPaymentId: razorpay_payment_id,
+        razorpaySignature: razorpay_signature,
+        status: "PAID",
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Payment verified",
+      order: updatedOrder,
+    });
   } catch (error) {
     next(error);
   }
 };
-
 
 const getMyOrder = async (req, res, next) => {
   try {
@@ -196,11 +271,11 @@ const cancelOrder = async (req, res, next) => {
   }
 };
 
-
 module.exports = {
   createOrder,
   getMyOrder,
   getAllOrder,
   updateOrderStatus,
   cancelOrder,
+  verifyPayment,
 };
