@@ -108,7 +108,7 @@ const SingleProduct = () => {
             rzp.open();
         } catch (error) {
             toast.error(error?.response?.data?.message || "Failed to create order");
-            console.error(error);
+            // console.error(error);
         }
     };
 

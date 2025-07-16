@@ -58,8 +58,6 @@ const createOrder = async (req, res, next) => {
         (sum, item) => sum + item.product.price * item.quantity,
         0
       );
-
-      await prisma.cartItem.deleteMany({ where: { userId } });
     }
     // Razorpay Order
     const rezorpayOrder = await razorpay.orders.create({
@@ -105,7 +103,7 @@ const verifyPayment = async (req, res, next) => {
       razorpay_signature,
       orderId,
     } = req.body;
-    
+
     if (
       !razorpay_order_id ||
       !razorpay_payment_id ||
@@ -136,6 +134,10 @@ const verifyPayment = async (req, res, next) => {
         razorpaySignature: razorpay_signature,
         status: "PAID",
       },
+    });
+
+    await prisma.cartItem.deleteMany({
+      where: { userId: updatedOrder.userId },
     });
 
     res.status(200).json({

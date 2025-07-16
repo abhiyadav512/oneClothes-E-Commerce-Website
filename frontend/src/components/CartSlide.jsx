@@ -1,10 +1,55 @@
 import { Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { Button } from "./ui/button";
+import axiosInstance from "@/lib/axiosInstance";
+import toast from "react-hot-toast";
 
 const CartSlide = ({ isOpen, onClose, cartItems, updateQuantity, removeItem }) => {
     const total = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
 
-    // console.log(cartItems);
+    const cartChekout = async () => {
+        try {
+            const res = await axiosInstance.post("/api/orders/create-order", {});
+            const { order, rezorpayOrder } = res.data;
+            // console.log(order, rezorpayOrder);
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                amount: rezorpayOrder.amount,
+                currency: "INR",
+                name: "OneClothes",
+                description: "Product Purchase",
+                order_id: rezorpayOrder.id,
+                handler: async function (response) {
+                    try {
+                        const verifyRes = await axiosInstance.post(
+                            "/api/orders/verify-payment",
+                            {
+                                orderId: order.id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature,
+                            }
+                        )
+                        // console.log(verifyRes);
+                        if (verifyRes.data.success) {
+                            toast.success("🎉 Payment successful!");
+                        } else {
+                            toast.error("⚠️ Payment verification failed.");
+                        }
+                    } catch (error) {
+                        toast.error("Payment verification error");
+                        console.error(error);
+                    }
+                }, theme: {
+                    color: "#000",
+                }
+            }
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+        } catch (error) {
+            toast.error(error?.response?.data?.message || "Failed to create order");
+            console.error(error);
+        }
+    }
     return (
         <>
             {isOpen && (
@@ -87,8 +132,8 @@ const CartSlide = ({ isOpen, onClose, cartItems, updateQuantity, removeItem }) =
                                 <span className="font-semibold">Total: ${total.toFixed(2)}</span>
                             </div>
                             <Button
-        
-                            className="w-full bg-black text-white hover:bg-gray-800">
+                                onClick={cartChekout}
+                                className="w-full bg-black text-white hover:bg-gray-800">
                                 Checkout
                             </Button>
                         </div>
